@@ -1,0 +1,23 @@
+# Create: mamba env create -f env_my_llm.yml
+# Activate: mamba activate my_llm
+# Update: mamba env update --file env_my_llm.yml
+# Update and prune: mamba env update --file env_my_llm.yml --prune
+name: my_llm
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  # Utils
+  - python>=3.9,<3.10
+  - pip
+  - jupyter
+  - notebook
+  - matplotlib
+  - tqdm
+  # ML
+  - numpy
+  - pytorch
+  - einops
+  - transformers
+  - tiktoken
+  - datasets
