@@ -17,6 +17,9 @@ class LLM(nn.Module):
         super().__init__()
         self.hParams = hParams
         self.embd = nn.Embedding(hParams.n_vocab, hParams.n_embd)
+        # Avoiding dropout here for now since it may lead to information loss (e.g. it 
+        # would mess with RoPE), and affect training stability since it's so early in the network.
+        # self.embd_dropout = nn.Dropout(hParams.embd_pdrop)
         self.transformer_blocks = nn.Sequential(
             *[TransformerBlock(hParams) for _ in range(hParams.n_layer)]
         )
@@ -37,7 +40,8 @@ class LLM(nn.Module):
         apply efficient post-normalization, and lastly project into logits using weight
         sharing of the last layer.
         ''' 
-        x = self.embd(x)        
+        x = self.embd(x)
+        # x = self.embd_dropout(x)
         x = self.transformer_blocks(x)
         x = self.norm(x)
         logits = self.out_proj(x)
@@ -76,7 +80,7 @@ if __name__ == '__main__':
         n_embd = 4,
         n_head = 2,
         n_layer = 2,
-        ffn_dropout = 0.1,
+        ffn_act_pdrop = 0.1,
     )
     
     expected_output = torch.tensor([[[-0.3571,  0.2121,  0.9920, -0.3854],

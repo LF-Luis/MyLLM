@@ -16,15 +16,24 @@ class TransformerBlock(nn.Module):
         with the limited pre-training dataset and small LLM.
         '''
         super().__init__()
-        self.norm1 = nn.RMSNorm(hParams.n_embd, eps=1e-5)  # Test later: scale=True)
-        self.norm2 = nn.RMSNorm(hParams.n_embd, eps=1e-5)
         self.attn = Attention(hParams)  # Casual, multi-head attention module.
         self.ffn = FFN(hParams)
-
+        self.norm1 = nn.RMSNorm(hParams.n_embd, eps=1e-5)  # Test later: scale=True)
+        self.norm2 = nn.RMSNorm(hParams.n_embd, eps=1e-5)
+        self.attn_dropout = nn.Dropout(hParams.attn_res_pdrop)
+        '''
+        Will rely on dropout post SwiGLU() activation, where the hidden space is larger. This
+        should encourage the model to develop more robust features, becoming less 
+        overly reliant on specific neurons
+        '''
+        # self.ffn_dropout = nn.Dropout(hParams.ffn_res_pdrop)
+        
     def forward(self, x):
         xn = self.norm1(x)
-        x = x + self.attn(xn)
-        return x + self.ffn(self.norm2(x))
+        x = x + self.attn_dropout(self.attn(xn))
+        xn = self.norm2(x)
+        # return x + self.ffn_dropout(self.ffn(xn))
+        return x + self.ffn(xn)
     
 
 if __name__ == '__main__':
@@ -38,7 +47,7 @@ if __name__ == '__main__':
         n_embd = 8,
         n_head = 2,
         n_layer = 0.,
-        ffn_dropout = 0.1,
+        ffn_act_pdrop = 0.1,
     )
     
     batch_size, n_ctx, embed_dim = 2, hParams.n_ctx, hParams.n_embd

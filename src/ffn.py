@@ -23,7 +23,9 @@ class FFN(nn.Module):
     Feed-forward neural network. Part of the transformer block, this will perform a
     non-linear transformation to capture complex patterns from the attention mechanism.
     - Keeping bias term in linear layers to help the small model's capacity to learn and generalize.
-    - Using dropout to help with generalization of small model.
+    - Using dropout to avoid overfitting in this large parameter space of this small model. Let's
+    force the network to learn redundant representations, which should improve its 
+    generalization capabilities
     '''
 
     def __init__(self, hParams: HParams):
@@ -32,7 +34,7 @@ class FFN(nn.Module):
         self.net = nn.Sequential(
             nn.Linear(hParams.n_embd, TWO_FOR_ONE * HIDDEN_EMBD_SCALE * hParams.n_embd),
             SwiGLU(),
-            nn.Dropout(hParams.ffn_dropout),  # Help ensure that non-linear transformations are regularized
+            nn.Dropout(hParams.ffn_act_pdrop),
             nn.Linear(HIDDEN_EMBD_SCALE * hParams.n_embd, hParams.n_embd),
         )
         
@@ -54,7 +56,7 @@ if __name__ == '__main__':
         n_embd = 8,
         n_head = 2,
         n_layer = 0.,
-        ffn_dropout = 0.1,
+        ffn_act_pdrop = 0.1,
     )
     
     batch_size, n_ctx, embed_dim = 2, hParams.n_ctx, hParams.n_embd

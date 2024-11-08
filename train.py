@@ -13,7 +13,8 @@ hParams = HParams(
     n_embd = 768,  # embedding dimension
     n_head = 12,  # number of attention heads
     n_layer = 12,  # number of attention blocks
-    ffn_dropout = 0.1  # dropout rate
+    ffn_act_pdrop = 0.15,  # Dropout after FFN activation
+    attn_res_pdrop = 0.1,  # After attention, in residual connection
 )
  
 tTParams = TParams(

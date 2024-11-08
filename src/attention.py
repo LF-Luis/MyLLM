@@ -21,6 +21,7 @@ class Attention(nn.Module):
         self.n_embd = hParams.n_embd
         self.n_head = hParams.n_head
         self.head_dim = self.n_embd // self.n_head  # Dimension per head
+        # self.attn_pdrop = hParams.attn_pdrop
         self.rope = Rope(hParams)
         self.qkv_proj = nn.Linear(self.n_embd, 3 * self.n_embd)  # Project to Q, K, V
         self.out_proj = nn.Linear(self.n_embd, self.n_embd)  # Output projection
@@ -56,7 +57,13 @@ class Attention(nn.Module):
         xq = self.rope.apply_rotary(xq)
         xk = self.rope.apply_rotary(xk)
         
-        y = F.scaled_dot_product_attention(xq, xk, xv, is_causal=True)
+        y = F.scaled_dot_product_attention(
+            xq,
+            xk,
+            xv,
+            is_causal=True,
+            # dropout_p=self.attn_pdrop,  # can lead to underfitting and training instability, specially since dropout is being in multiple other places
+        )
         
         # Reshape the output back to (batch_size, n_ctx, embed_dim)
         y = y.transpose(1, 2).reshape(batch_size, n_ctx, embed_dim)
