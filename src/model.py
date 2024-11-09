@@ -5,6 +5,7 @@ from torch.nn import functional as F
 
 from src.params import HParams
 from src.transformer_block import TransformerBlock
+from src.utils.weight_init import init_embedding
 
 
 class LLM(nn.Module):
@@ -26,6 +27,10 @@ class LLM(nn.Module):
         self.norm = nn.RMSNorm(hParams.n_embd, eps=1e-5)
         self.out_proj = nn.Linear(hParams.n_embd, hParams.n_vocab, bias=False)
         self.embd.weight = self.out_proj.weight
+        self.reset_parameters(hParams)
+
+    def reset_parameters(self, hParams: HParams):
+        init_embedding(self.embd, hParams)
         
     def forward(
             self, x: torch.Tensor, y: torch.Tensor = None
@@ -83,17 +88,18 @@ if __name__ == '__main__':
         ffn_act_pdrop = 0.1,
     )
     
-    expected_output = torch.tensor([[[-0.3571,  0.2121,  0.9920, -0.3854],
-         [-0.5856,  0.5658,  0.8923,  0.0022],
-         [-0.6292,  0.6958,  0.9037, -0.0424],
-         [-0.6026,  0.6961,  0.9856, -0.2327],
-         [-0.6149,  0.6599,  0.8561,  0.0293]],
-
-        [[-0.3460,  0.2279,  0.9943, -0.4344],
-         [-0.4709,  0.4108,  0.9912, -0.2740],
-         [-0.5231,  0.4391,  0.8254,  0.0707],
-         [-0.4790,  0.3604,  1.0687, -0.3408],
-         [-0.2865,  0.1606,  0.8860, -0.3446]]])
+    expected_output = torch.tensor([
+        [[ 0.0643,  0.1504,  1.5457, -0.3968],
+         [ 0.2599,  0.5008,  0.1130,  1.2352],
+         [ 0.1778,  0.3794,  0.0348,  1.2232],
+         [-0.1258,  1.1608, -0.3776,  0.7196],
+         [ 0.0292,  0.2619, -0.3227,  1.1662]],
+        [[ 0.0333,  0.1185,  1.5608, -0.3510],
+         [-0.0135,  1.3279, -0.2422,  0.6294],
+         [ 0.1876,  0.3131, -0.0958,  1.2011],
+         [-0.0848,  0.2016,  1.4463, -0.3105],
+         [ 0.1845,  0.6925, -0.4936, -0.5954]]
+    ])
     
     model = LLM(hParams)
     output, _ = model(x)
@@ -109,7 +115,7 @@ if __name__ == '__main__':
             print(f"Diff at index {idx}: output = {output[idx]}, expected_output = {expected_output[idx]}")
 
     output, loss = model(x, y)
-    expected_loss = 1.740107
+    expected_loss = 1.576537
     output = torch.round(output * 10000) / 10000
     loss = loss.item()
     # print(f'loss: {(loss)}')
@@ -117,5 +123,5 @@ if __name__ == '__main__':
     if round(loss, 6) == expected_loss:
         print('Got expected loss!')
     else:
-        f'Error, {round(loss, 5)} != {expected_loss}'
+        print(f'Error, {round(loss, 5)} != {expected_loss}')
     

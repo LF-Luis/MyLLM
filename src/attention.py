@@ -5,6 +5,7 @@ from einops import rearrange
 
 from src.params import HParams
 from src.rope import Rope
+from src.utils.weight_init import init_linear, init_linear_res_proj
 
 
 class Attention(nn.Module):
@@ -25,6 +26,11 @@ class Attention(nn.Module):
         self.rope = Rope(hParams)
         self.qkv_proj = nn.Linear(self.n_embd, 3 * self.n_embd)  # Project to Q, K, V
         self.out_proj = nn.Linear(self.n_embd, self.n_embd)  # Output projection
+        self._reset_parameters(hParams)
+
+    def _reset_parameters(self, hParams: HParams):
+        init_linear(self.qkv_proj, hParams)
+        init_linear_res_proj(self.out_proj, hParams)
 
     def forward(self, x):
         batch_size, n_ctx, embed_dim = x.size()
@@ -80,7 +86,7 @@ if __name__ == '__main__':
         n_ctx = 4,
         n_embd = 8,
         n_head = 2,
-        n_layer = 0.,
+        n_layer = 6,
     )
     
     batch_size, n_ctx, embed_dim = 2, hParams.n_ctx, hParams.n_embd
@@ -97,14 +103,14 @@ if __name__ == '__main__':
     ])
 
     expected_output = torch.tensor([
-        [[ 0.0942, -0.3012,  0.4149,  0.0168,  0.1095, -0.5339,  0.0681, 0.0089],
-         [ 0.1005, -0.2839,  0.3736,  0.0691,  0.1328, -0.6172,  0.0480, 0.0559],
-         [ 0.0723, -0.2863,  0.3848,  0.1243,  0.1238, -0.5957,  0.0631, 0.0658],
-         [ 0.0783, -0.2749,  0.3680,  0.1338,  0.1514, -0.5400,  0.0961, 0.0455]],
-        [[ 0.1653, -0.3040,  0.3642, -0.0708,  0.2208, -0.4727,  0.1149, -0.0151],
-         [ 0.1264, -0.2927,  0.3560,  0.0318,  0.1349, -0.4994,  0.0672, 0.0185],
-         [ 0.1567, -0.2911,  0.3213,  0.0021,  0.0895, -0.4415,  0.0377, -0.0077],
-         [ 0.1333, -0.2480,  0.3435,  0.0351,  0.1369, -0.4808,  0.0671, -0.0041]]
+        [[-0.0174,  0.0117,  0.0126, -0.0265, -0.0076,  0.0299,  0.0985, -0.0651],
+         [-0.0026,  0.0103,  0.0168,  0.0157, -0.0218,  0.0313,  0.1209, -0.0648],
+         [-0.0013,  0.0109,  0.0216,  0.0219, -0.0142,  0.0335,  0.1194, -0.0562],
+         [ 0.0056,  0.0029,  0.0259,  0.0323, -0.0273,  0.0316,  0.1189, -0.0548]],
+        [[ 0.0056, -0.0153,  0.0235,  0.0127, -0.0415,  0.0129,  0.0927, -0.0704],
+         [-0.0026,  0.0063,  0.0185,  0.0115, -0.0270,  0.0305,  0.1077, -0.0593],
+         [-0.0095,  0.0213,  0.0043,  0.0005, -0.0368,  0.0408,  0.1136, -0.0592],
+         [-0.0026,  0.0143,  0.0096,  0.0121, -0.0440,  0.0393,  0.1219, -0.0608]]
     ])
     
     casual_self_attention = Attention(hParams)

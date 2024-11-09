@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 
 from src.params import HParams
+from src.utils.weight_init import init_linear, init_linear_res_proj
 
 
 HIDDEN_EMBD_SCALE = 4
@@ -37,6 +38,11 @@ class FFN(nn.Module):
             nn.Dropout(hParams.ffn_act_pdrop),
             nn.Linear(HIDDEN_EMBD_SCALE * hParams.n_embd, hParams.n_embd),
         )
+        self.reset_parameters(hParams)
+
+    def reset_parameters(self, hParams: HParams):        
+        init_linear(self.net[0], hParams)
+        init_linear_res_proj(self.net[-1], hParams)
         
     def forward(self, x):
         '''
@@ -55,7 +61,7 @@ if __name__ == '__main__':
         n_ctx = 4,
         n_embd = 8,
         n_head = 2,
-        n_layer = 0.,
+        n_layer = 6,
         ffn_act_pdrop = 0.1,
     )
     
@@ -72,25 +78,20 @@ if __name__ == '__main__':
          [0.0036, 0.7032, 0.3051, 0.8070, 0.9271, 0.6647, 0.9296, 0.3848]]
     ])
 
-    expected_output = torch.tensor([[[ 0.1274, -0.0766, -0.1010,  0.1599,  0.0196,  0.0589, -0.1362,
-          -0.1856],
-         [ 0.1235, -0.1349, -0.1412,  0.0738, -0.0216,  0.1400, -0.0621,
-          -0.0961],
-         [ 0.0967, -0.1291, -0.1125,  0.1381, -0.0056,  0.1013, -0.0937,
-          -0.1164],
-         [ 0.1150, -0.1096, -0.1162,  0.0749,  0.0149,  0.1102, -0.0866,
-          -0.1101]],
-
-        [[ 0.1510, -0.0952, -0.1174,  0.0986,  0.0182,  0.1172, -0.1104,
-          -0.1364],
-         [ 0.1071, -0.1371, -0.1242,  0.1373,  0.0156,  0.0754, -0.1098,
-          -0.1197],
-         [ 0.1486, -0.1094, -0.1264,  0.1391,  0.0187,  0.0935, -0.1690,
-          -0.1305],
-         [ 0.2138, -0.0309, -0.1391,  0.0895, -0.0202,  0.1135, -0.0517,
-          -0.1611]]])
+    expected_output = torch.tensor([
+        [[ 0.0031,  0.0024,  0.0400,  0.0311,  0.0209,  0.0057, -0.0173, -0.0096],
+         [-0.0224, -0.0248,  0.0107,  0.0238, -0.0034,  0.0012, -0.0131, -0.0165],
+         [-0.0076, -0.0107,  0.0237,  0.0059,  0.0057,  0.0005, -0.0060, -0.0131],
+         [-0.0216, -0.0077, -0.0132,  0.0093,  0.0035,  0.0114,  0.0076, -0.0013]],
+        [[-0.0140,  0.0252,  0.0317,  0.0114,  0.0021,  0.0078,  0.0011, -0.0034],
+         [ 0.0008, -0.0164,  0.0071,  0.0168,  0.0116, -0.0020, -0.0088, -0.0031],
+         [-0.0047, -0.0136, -0.0043,  0.0080, -0.0085, -0.0126, -0.0115, 0.0066],
+         [-0.0292, -0.0165,  0.0083,  0.0125,  0.0137,  0.0162,  0.0123, -0.0131]]])
     
-    ffn = FFN(hParams)
+    ffn = FFN(hParams)    
+    # from utils.debugging import get_stats
+    # get_stats(ffn.net[0].weight.data)
+    # get_stats(ffn.net[3].weight.data)
     output = ffn(x)
     output = torch.round(output * 10000) / 10000
 
