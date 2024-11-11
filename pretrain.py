@@ -1,11 +1,13 @@
+import tiktoken
 
+from src.params import HParams, TParams
 
 '''
 Main script to train language model.
 Let's pretrain a small (~1B params) model and then finetune it for general knowledge Q&A.
 '''
 
-
+tokenizer = tiktoken.get_encoding("r50k_base")
 
 hParams = HParams(
     n_vocab = 50257,  # Vocab size of r50k_base
@@ -17,8 +19,8 @@ hParams = HParams(
     attn_res_pdrop = 0.1,  # After attention, in residual connection
 )
  
-tTParams = TParams(
-    max_steps = 19073  # Max number of training steps
+tParams = TParams(
+    tot_steps = 19073  # Total number of training steps
 )
     
     

@@ -10,7 +10,7 @@ import time
 
 '''
 Data downloader file to download and process large datasets from HF.
-This code can download (in parallel), tokenize data (in prallel) and store that data 
+This code can download (in parallel), tokenize data (in parallel) and store that data 
 into multiple shards for usage later.
 
 Right now this code is only being used for the "HuggingFaceFW/fineweb-edu" "sample-10BT"
@@ -38,8 +38,8 @@ if os.getenv('MAC_DEBUG'):
     SHARDS_COUNT = 7
 
 
-# tiktoken is much faster than HF's AutoTokenizer.from_pretrained("gpt2", use_fast=True)
-tokenizer = tiktoken.get_encoding("gpt2")
+# Using fast BPE tokenizer tiktoken 
+tokenizer = tiktoken.get_encoding("r50k_base")
 eot_token = tokenizer._special_tokens['<|endoftext|>']
 def tokenize_to_uint16(data_entry):
     # Tokenize
