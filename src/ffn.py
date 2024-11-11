@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 from src.params import HParams
-from src.utils.weight_init import init_linear, init_linear_res_proj
+from src.model_utils.weight_init import init_linear, init_linear_res_proj
 
 
 HIDDEN_EMBD_SCALE = 4

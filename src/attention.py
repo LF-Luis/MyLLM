@@ -5,7 +5,7 @@ from einops import rearrange
 
 from src.params import HParams
 from src.rope import Rope
-from src.utils.weight_init import init_linear, init_linear_res_proj
+from src.model_utils.weight_init import init_linear, init_linear_res_proj
 
 
 class Attention(nn.Module):

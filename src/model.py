@@ -5,7 +5,7 @@ from torch.nn import functional as F
 
 from src.params import HParams
 from src.transformer_block import TransformerBlock
-from src.utils.weight_init import init_embedding
+from src.model_utils.weight_init import init_embedding
 
 
 class LLM(nn.Module):
