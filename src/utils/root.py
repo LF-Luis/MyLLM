@@ -2,7 +2,7 @@ import os
 import logging
 
 
-logger = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
 
 
 def get_root_abs_path() -> str:
@@ -22,7 +22,7 @@ def create_temp_data_dir(path: str) -> str:
     Returns path to directory.
     '''
     dir = os.path.join(get_root_abs_path(), 'temp_data', path)
-    logger.info(f'Creating dir: {dir}')
+    log.info(f'Creating dir: {dir}')
     os.makedirs(dir, exist_ok=True)
     return dir
 
@@ -33,7 +33,7 @@ def create_temp_data_file(path: str, file_name: str) -> str:
     '''
     dir = create_temp_data_dir(path)
     file_path = os.path.join(dir, file_name)
-    logger.info(f'Creating file: {file_path}')
+    log.info(f'Creating file: {file_path}')
     with open(file_path, 'w') as f:
         pass
     return file_path
@@ -41,4 +41,4 @@ def create_temp_data_file(path: str, file_name: str) -> str:
 
 if __name__ == '__main__':
     pass
-    # logger.info(get_temp_data_abs_path())
+    # log.info(get_temp_data_abs_path())
