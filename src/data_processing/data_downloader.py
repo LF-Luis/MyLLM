@@ -30,7 +30,7 @@ SHARD_FILE_PREFIX = "edufineweb"
 CHUNK_SIZE = 16
 SHARDS_COUNT = 100
 
-if os.getenv('MAC_DEBUG'):
+if os.getenv('DEBUG_MODE'):
     # Debug args -- downloads only 200 entries from FineWeb EDU
     DEBUG_STREAMING = True
     NUM_PROC_FOR_DOWNLOAD = None # If streaming, can't use parallel downloading of dataset

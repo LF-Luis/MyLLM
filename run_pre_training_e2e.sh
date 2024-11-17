@@ -22,7 +22,7 @@ log() {
 }
 
 log "LOGFILE: $LOGFILE"
-log "MAC_DEBUG is set to $MAC_DEBUG"
+log "DEBUG_MODE is set to $DEBUG_MODE"
 
 # Check if running on GPU-instance
 if command -v nvidia-smi &> /dev/null && nvidia-smi > /dev/null 2>&1; then
