@@ -8,12 +8,13 @@ import torch
 from src.model import LLM
 from src.params import HParams, TParams
 from src.utils.logger import setup_logging
-from src.utils.handle_ddp import HandleDDP
+from src.utils.handle_ddp import DDPHandler
+from src.model_utils.adamw_opt import AdamWOptimizer
 from src.model_utils.debugging import get_model_size
+
 
 '''
 Main script to train language model.
-Let's pretrain a small (~500M params) model and then finetune it for general knowledge Q&A.
 '''
 
 tokenizer = tiktoken.get_encoding("r50k_base")
@@ -51,7 +52,7 @@ tParams = TParams(
 
 
 if __name__ == "__main__":
-    ddp = HandleDDP()
+    ddp = DDPHandler()
     setup_logging()
     log = logging.getLogger(__name__)
 
@@ -61,6 +62,10 @@ if __name__ == "__main__":
         print(f'Model size: {math.ceil(get_model_size(model) / 1_000_000)}M')
         print(f'hParams: {hParams}')
         print(f'tParams: {tParams}')
+
+    opt = AdamWOptimizer(tParams, ddp, model)
+    opt.zero_grad()
+    opt.step(step=0)
 
     ddp.end()
     

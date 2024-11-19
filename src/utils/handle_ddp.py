@@ -16,7 +16,7 @@ MPS = "mps"
 CPU = "cpu"
 
 
-class HandleDDP:
+class DDPHandler:
     '''
     Helper class to handle PyTorch's Distributed Data Parallel (DDP) states.
     Note, training with at most one node (with N-number of GPUs, usually 4 virtual or 8).
@@ -77,5 +77,5 @@ if __name__ == "__main__":
 
     logging.basicConfig(level=logging.DEBUG)
 
-    ddp = HandleDDP()
+    ddp = DDPHandler()
     ddp.end()
