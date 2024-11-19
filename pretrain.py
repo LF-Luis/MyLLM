@@ -3,7 +3,6 @@ import logging
 
 import tiktoken
 import torch
-from torch.distributed import init_process_group, destroy_process_group
 
 from src.params import HParams, TParams
 from src.utils.logger import setup_logging
@@ -17,26 +16,44 @@ Let's pretrain a small (~500M params) model and then finetune it for general kno
 tokenizer = tiktoken.get_encoding("r50k_base")
 
 hParams = HParams(
-    n_vocab = 50257,  # Vocab size of r50k_base
-    n_ctx = 2048,  # context size
-    n_embd = 768,  # embedding dimension
-    n_head = 12,  # number of attention heads
-    n_layer = 12,  # number of attention blocks
-    ffn_act_pdrop = 0.15,  # Dropout after FFN activation
-    attn_res_pdrop = 0.1,  # After attention, in residual connection
+    n_vocab = 50257,
+    n_ctx = 2048,
+    n_embd = 768,
+    n_head = 12,
+    n_layer = 12,
+    ffn_act_pdrop = 0.15,
+    attn_res_pdrop = 0.1,
 )
- 
+
+# See `notebooks/parameters_tuning.ipynb` to see how I came up with my guessed 1.19e-02 ratio and max_lr = 0.0021
+tot_train_tokens = 10e9  # Training on 10BT
+batch_token_count = 524_288
+linear_warm_up_tokens = int(1.19e-02 * tot_train_tokens)
+linear_warm_up_steps = int(linear_warm_up_tokens / batch_token_count)
+total_training_steps = int(tot_train_tokens / batch_token_count)
+
 tParams = TParams(
-    tot_steps = 19073  # Total number of training steps
+    tot_steps = total_training_steps,
+    warm_up_steps = linear_warm_up_steps,
+    batch_token_count = batch_token_count,
+    max_lr = 0.0021,
+    min_lr_ratio = 0.1,
+    adam_beta_1 = 0.9, 
+    adam_beta_2 = 0.95,
+    adam_eps = 1e-8,
+    clip_grad_max_norm = 1.0,
+    weight_decay_rate = 0.1,
 )
 
 
 if __name__ == "__main__":
-
+    ddp = HandleDDP()
     setup_logging()
     log = logging.getLogger(__name__)
 
-    ddp = HandleDDP()
+    if ddp.is_main:
+        print(f'hParams: {hParams}')
+        print(f'tParams: {tParams}')
 
     ddp.end()
     
