@@ -1,12 +1,15 @@
 import os
 import logging
+import math
 
 import tiktoken
 import torch
 
+from src.model import LLM
 from src.params import HParams, TParams
 from src.utils.logger import setup_logging
 from src.utils.handle_ddp import HandleDDP
+from src.model_utils.debugging import get_model_size
 
 '''
 Main script to train language model.
@@ -15,13 +18,14 @@ Let's pretrain a small (~500M params) model and then finetune it for general kno
 
 tokenizer = tiktoken.get_encoding("r50k_base")
 
+# Looking at common trends from assets/some_open_source_models.png to help select n_ctx, n_head and n_layer
 hParams = HParams(
-    n_vocab = 50257,
-    n_ctx = 2048,
-    n_embd = 768,
-    n_head = 12,
-    n_layer = 12,
-    ffn_act_pdrop = 0.15,
+    n_vocab = 50_257,
+    n_ctx = 2_048,
+    n_embd = 1_024,
+    n_head = 16,
+    n_layer = 16,
+    ffn_act_pdrop = 0.15,  # Slightly larger dropout due to larger hidden space
     attn_res_pdrop = 0.1,
 )
 
@@ -51,7 +55,10 @@ if __name__ == "__main__":
     setup_logging()
     log = logging.getLogger(__name__)
 
+    model = LLM(hParams)
+
     if ddp.is_main:
+        print(f'Model size: {math.ceil(get_model_size(model) / 1_000_000)}M')
         print(f'hParams: {hParams}')
         print(f'tParams: {tParams}')
 
