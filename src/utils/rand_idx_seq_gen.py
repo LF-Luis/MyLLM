@@ -21,7 +21,8 @@ class RandIdxSeqGen:
     all ranks.
     '''
 
-    def __init__(self, seqLen, rank=None, world_size=None, rnd_seed=None):
+    def __init__(self, ddp, seqLen, rank=None, world_size=None, rnd_seed=None):
+        self.ddp = ddp
         self.seqLen = seqLen
         self.rank = rank
         self.world_size = world_size
@@ -48,6 +49,8 @@ class RandIdxSeqGen:
             and self.world_size is not None
             and self.world_size > 1
         ):
+            if self.ddp.is_avail:
+                self.rnd_ordered_idx = self.rnd_ordered_idx.to(self.ddp.assigned_device)
             dist.broadcast(self.rnd_ordered_idx, src=0)
 
     def next(self):

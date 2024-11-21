@@ -27,7 +27,7 @@ log "DEBUG_MODE is set to $DEBUG_MODE"
 # Check if running on GPU-instance
 if command -v nvidia-smi &> /dev/null && nvidia-smi > /dev/null 2>&1; then
     log "Running on NVIDIA GPU-instance!"
-    pip install transformers && pip install tiktoken && pip install --upgrade scipy && pip install --upgrade networkx && pip install datasets && pip install tqdm
+    pip install transformers && pip install tiktoken && pip install --upgrade scipy && pip install --upgrade networkx && pip install datasets && pip install tqdm && pip install einops && pip install "numpy<2"
 fi
 
 # Download pretraining data
@@ -41,6 +41,11 @@ fi
 
 # Start pretraining
 log "Start training MyLLM."
-python pretrain.py
-# torchrun --standalone --nproc_per_node=8 pretrain.py
+if command -v nvidia-smi &> /dev/null && nvidia-smi > /dev/null 2>&1; then
+    GPU_COUNT=$(nvidia-smi --list-gpus | wc -l)
+    log "Number of GPUs: $GPU_COUNT"
+    torchrun --standalone --nproc_per_node=$GPU_COUNT pretrain.py
+else
+    python pretrain.py
+fi
 log "Done training MyLLM."

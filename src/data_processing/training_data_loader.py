@@ -29,9 +29,10 @@ class TrainingDataLoader:
     '''
 
 
-    def __init__(self, dataset_dir: str, rank: int, world_size: int, batch_count: int, tokens_per_batch: int):
-        self.rank = rank
-        self.world_size = world_size
+    def __init__(self, ddp, dataset_dir: str, batch_count: int, tokens_per_batch: int):
+        self.ddp = ddp
+        self.rank = ddp.local_rank
+        self.world_size = ddp.world_size
         self.curr_batch_count = batch_count
         self.curr_tokens_per_batch = tokens_per_batch
         self.rnd_sample_idx_gen = None
@@ -61,6 +62,7 @@ class TrainingDataLoader:
 
         # Create random key generator for `train_shards` dict
         self.train_shrds_rnd_key_gen = RandIdxSeqGen(
+            ddp = self.ddp,
             seqLen=len(self.train_shards),
             rank=self.rank,
             world_size=self.world_size,
@@ -148,6 +150,7 @@ class TrainingDataLoader:
 
         if self.rnd_sample_idx_gen is None:
             self.rnd_sample_idx_gen = RandIdxSeqGen(
+                ddp = self.ddp,
                 seqLen=seq_len,
                 rank=self.rank,
                 world_size=self.world_size,

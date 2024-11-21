@@ -28,7 +28,7 @@ def get_production_config():
 
     # See `notebooks/parameters_tuning.ipynb` to see how I came up with my guessed 1.19e-02 ratio and max_lr = 0.0021
     tot_train_tokens = 10e9  # Training on 10BT
-    batch_token_count = 524_288
+    batch_token_count = 262_144  # 524_288
     linear_warm_up_tokens = int(1.19e-02 * tot_train_tokens)
     linear_warm_up_steps = int(linear_warm_up_tokens / batch_token_count)
     total_training_steps = int(tot_train_tokens / batch_token_count)
@@ -44,7 +44,7 @@ def get_production_config():
         adam_eps = 1e-8,
         clip_grad_max_norm = 1.0,
         weight_decay_rate = 0.1,
-        logging_interval = 1,
+        logging_interval = 50,
         checkpointing_steps = set(
             list(
                 range(0, total_training_steps, int(total_training_steps * 0.2))

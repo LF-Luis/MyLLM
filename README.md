@@ -21,3 +21,8 @@ Below are is a summary table I created to help me tune my parameters (more info 
 
 
 More to come...
+
+
+11/21/24 2:14PM
+Time (per step) = 767.36 ms. 
+Throughput: 341,620.04 tokens/sec

@@ -21,9 +21,9 @@ Main script to pre-train MyLLM in 8xA100 GPUs.
 '''
 
 if __name__ == "__main__":
-    ddp = DDPHandler()
     setup_logging()
     log = logging.getLogger(__name__)
+    ddp = DDPHandler()
 
     # Set up all parameters
     hParams, tParams = get_llm_config()
@@ -43,8 +43,8 @@ if __name__ == "__main__":
     torch.set_float32_matmul_precision('high')  # Enable TF32
 
     if ddp.is_main:
-        log.info(f'Model size (full): {get_model_size(model):,}')
-        log.info(f'Model size: {math.ceil(get_model_size(model) / 1_000_000)}M')
+        log.info(f'Model size (full): {get_model_size(ddp.get_actual_model(model)):,}')
+        log.info(f'Model size: {math.ceil(get_model_size(ddp.get_actual_model(model)) / 1_000_000)}M')
         log.info(f'batch_size: {batch_size}')
         log.info(f'hParams: {hParams}')
         log.info(f'tParams: {tParams}')
@@ -52,8 +52,7 @@ if __name__ == "__main__":
     # Prep data loader
     data_loader = TrainingDataLoader(
         dataset_dir=os.path.join(get_temp_data_abs_path(), 'edu_fineweb10B'),
-        rank=ddp.local_rank,
-        world_size=ddp.world_size,
+        ddp=ddp,
         batch_count=batch_size,
         tokens_per_batch=hParams.n_ctx,
     )
@@ -75,7 +74,7 @@ if __name__ == "__main__":
 
         grad_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), tParams.clip_grad_max_norm)
         
-        opt.step(step=step)
+        debugging_lr = opt.step(step=step)
 
         '''
         Log metrics and save checkpoints at certain intervals.
@@ -91,8 +90,8 @@ if __name__ == "__main__":
         if ddp.is_avail and should_checkpoint:
             ddp.barrier()
 
-        if ddp.is_main and should_log:
-            log_training_metrics(log, ddp, tParams, step_start_time, step, loss, grad_norm)
+        if should_log:
+            log_training_metrics(log, ddp, tParams, step_start_time, step, loss, grad_norm, debugging_lr)
         if ddp.is_main and should_checkpoint:
             save_checkpoint(ddp.get_actual_model(model), opt.optimizer, step)
 

@@ -45,11 +45,10 @@ class AdamWOptimizer:
         for param_group in self.optimizer.param_groups:
             param_group['lr'] = lr
 
-        if self.ddp.is_main:
-            log.info(f"Step {step}: LR: {lr:.4e}")
-
         # Update weights
         self.optimizer.step()
+
+        return lr  # Only used for debugging
 
     def _get_scheduled_lr(self, step):
         '''

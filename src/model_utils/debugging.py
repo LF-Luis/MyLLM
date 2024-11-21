@@ -25,7 +25,7 @@ def get_model_size(model):
 
 
 def log_training_metrics(
-        log, ddp, tParams, step_start_time, step, loss, grad_norm
+        log, ddp, tParams, step_start_time, step, loss, grad_norm, lr
     ):
     '''
     Offload all metric logging to one function.
@@ -42,7 +42,8 @@ def log_training_metrics(
     grad_norm = f'{grad_norm:.4f}'
 
     time_elapsed = time.time() - step_start_time  # secs
-    throughput = f'{tParams.batch_token_count / time_elapsed:.2f}'
+    throughput = f'{tParams.batch_token_count / time_elapsed:,.2f}'
     time_elapsed = f'{time_elapsed * 1_000:.2f}'  # m.secs
 
-    log.info(f"Step {step}: Time = {time_elapsed} ms. Avg. loss = {avg_loss}. Perplexity: {perplexity}. Grad Norm: {grad_norm}. Throughput: {throughput} tokens/sec")
+    if ddp.is_main:
+        log.info(f"Step {step}: Time = {time_elapsed} ms. LR: {lr:.4e}. Avg. loss = {avg_loss}. Perplexity: {perplexity}. Grad Norm: {grad_norm}. Throughput: {throughput} tokens/sec")
