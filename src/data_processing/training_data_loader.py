@@ -1,5 +1,6 @@
 import os
 import re
+import logging
 import torch
 import numpy as np
 from dataclasses import dataclass
@@ -7,6 +8,8 @@ from collections import OrderedDict
 
 from src.utils.rand_idx_seq_gen import RandIdxSeqGen
 
+
+log = logging.getLogger(__name__)
 
 SHARD_RE_PATTERN = re.compile(r"_i_(\d+)_t_(\d+)\.npy")
 SHARD_RND_SEED_BASE = 42
@@ -47,7 +50,6 @@ class TrainingDataLoader:
         # Load dataset
 
         self.dataset_dir = dataset_dir
-        # = os.path.join(get_temp_data_abs_path(), dataset_dir)
 
         assert (
             os.path.isdir(self.dataset_dir) 
@@ -196,14 +198,17 @@ class TrainingDataLoader:
 
         if next_shrd_key is None:
             # One epoch of data has been completed
-            print(f'Rank: {self.rank}. The entire training dataset has been seen.')
+            if self.ddp.is_main:
+                log.info('Entire training dataset has been seen, will shuffle and iterate through it again.')
             self.train_shrds_rnd_key_gen.reset(len(self.train_shards))
             next_shrd_key = self.train_shrds_rnd_key_gen.next()
             # print(f'DEBUG: train_shrds_rnd_key_gen order: {self.train_shrds_rnd_key_gen.rnd_ordered_idx}')
 
-        # print(f'Rank: {self.rank}. Next shard key to use: {next_shrd_key}')
         shard_file_path = self.train_shards[next_shrd_key].abs_path
         self.curr_train_tokens = self._load_np_arr(shard_file_path)
+
+        if self.ddp.is_main:
+            log.info(f'Next shard key to use: {next_shrd_key}. shard_file_path: {shard_file_path}')
 
     def _load_np_arr(self, npy_path):
         tokens = np.load(npy_path)
