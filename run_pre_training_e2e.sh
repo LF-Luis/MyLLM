@@ -42,4 +42,5 @@ fi
 # Start pretraining
 log "Start training MyLLM."
 python pretrain.py
+# torchrun --standalone --nproc_per_node=8 pretrain.py
 log "Done training MyLLM."

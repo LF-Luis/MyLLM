@@ -30,7 +30,7 @@ class AdamWOptimizer:
             lr=tParams.max_lr,
             betas=(tParams.adam_beta_1, tParams.adam_beta_2),
             eps=tParams.adam_eps,
-            fused=True,
+            fused=ddp.is_avail,
         )
 
     def zero_grad(self):
@@ -44,6 +44,9 @@ class AdamWOptimizer:
         lr = self._get_scheduled_lr(step)
         for param_group in self.optimizer.param_groups:
             param_group['lr'] = lr
+
+        if self.ddp.is_main:
+            log.info(f"Step {step}: LR: {lr:.4e}")
 
         # Update weights
         self.optimizer.step()

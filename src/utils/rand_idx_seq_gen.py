@@ -5,11 +5,11 @@ import torch.distributed as dist
 class RandIdxSeqGen:
     '''
     Random Index Sequence Generator.
-    Class to create a sequence of indicies that have been randomly suffled.
-    Class allows for the indicies to be updated.
+    Class to create a sequence of indices that have been randomly shuffled.
+    Class allows for the indices to be updated.
 
-    For example, for a given sequence length `seqLen` of 5, which would represent a
-    list of 5 items, we would have the following indices:
+    For example, for a given sequence length `seqLen` of 6, which would represent a
+    list of 6 items, we would have the following indices:
     [0, 1, 2, 3, 4, 5]
 
     This class would shuffle the indices and give you access to the current and next index:

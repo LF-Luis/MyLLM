@@ -1,3 +1,9 @@
+import time
+
+import torch
+import torch.distributed as dist
+
+
 def get_stats(weights):
     # min_val = weights.min().item()
     max_val = weights.max().item()
@@ -16,3 +22,27 @@ def get_model_size(model):
     trainable_param_count = sum(p.numel() for p in model.parameters() if p.requires_grad)
     double_counted = sum(p.numel() for p in model.out_proj.parameters())  # Due to weight-tying
     return trainable_param_count - double_counted
+
+
+def log_training_metrics(
+        log, ddp, tParams, step_start_time, step, loss, grad_norm
+    ):
+    '''
+    Offload all metric logging to one function.
+    If running in a DDP env, this is expected to be called by rank 0 only.
+    '''
+
+    avg_loss = loss.detach()
+    if ddp.is_avail:
+        dist.all_reduce(avg_loss, op=dist.ReduceOp.AVG)
+
+    perplexity = torch.exp(avg_loss)
+    perplexity = f'{perplexity.item():.4f}'
+    avg_loss = f'{avg_loss.item():.4f}'
+    grad_norm = f'{grad_norm:.4f}'
+
+    time_elapsed = time.time() - step_start_time  # secs
+    throughput = f'{tParams.batch_token_count / time_elapsed:.2f}'
+    time_elapsed = f'{time_elapsed * 1_000:.2f}'  # m.secs
+
+    log.info(f"Step {step}: Time = {time_elapsed} ms. Avg. loss = {avg_loss}. Perplexity: {perplexity}. Grad Norm: {grad_norm}. Throughput: {throughput} tokens/sec")

@@ -36,3 +36,6 @@ class TParams:
     adam_eps: float  # Used in AdamW optimizer
     clip_grad_max_norm: float  # Max value to clip the gradient norm all parameters
     weight_decay_rate: float  # L2 regularization factor to prevent overfitting
+
+    logging_interval: int  # At what intervals to log
+    checkpointing_steps: set  # At intervals to create a checkpoint
