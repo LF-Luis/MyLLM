@@ -27,6 +27,7 @@ class TParams:
     Training parameters
     '''
     tot_steps: int  # Total number of training steps
+    grad_acc_steps: int  # Gradient accumulation steps (tune to system being used)
     warm_up_steps: int  # Steps in which to perform initial linear LR warm up
     batch_token_count: int  # Number of tokens that make up one global batch
     max_lr: float  # Max learning rate to reach

@@ -2,6 +2,7 @@ import os
 import logging
 import math
 import time
+from contextlib import nullcontext
 
 import torch
 
@@ -28,8 +29,8 @@ if __name__ == "__main__":
     # Set up all parameters
     hParams, tParams = get_llm_config()
     batch_size = tParams.batch_token_count / ddp.world_size / hParams.n_ctx
-    assert batch_size.is_integer(), f'batch_size {batch_size} ends up being a float.'
-    batch_size = int(batch_size)
+    micro_batch_size = int(batch_size / tParams.grad_acc_steps)
+    assert batch_size % micro_batch_size == 0, f'Error, batch_size ({batch_size}) must be divisible by micro_batch_size ({micro_batch_size}).'
 
     # Setup model and optimizer
     # Make sure to keep this order: move to device, compile, then DDP wrap
@@ -46,6 +47,7 @@ if __name__ == "__main__":
         log.info(f'Model size (full): {get_model_size(ddp.get_actual_model(model)):,}')
         log.info(f'Model size: {math.ceil(get_model_size(ddp.get_actual_model(model)) / 1_000_000)}M')
         log.info(f'batch_size: {batch_size}')
+        log.info(f'micro_batch_size: {micro_batch_size}')
         log.info(f'hParams: {hParams}')
         log.info(f'tParams: {tParams}')
 
@@ -53,7 +55,7 @@ if __name__ == "__main__":
     data_loader = TrainingDataLoader(
         dataset_dir=os.path.join(get_temp_data_abs_path(), 'edu_fineweb10B'),
         ddp=ddp,
-        batch_count=batch_size,
+        batch_count=micro_batch_size,
         tokens_per_batch=hParams.n_ctx,
     )
 
@@ -66,11 +68,24 @@ if __name__ == "__main__":
         step_start_time = time.time()
         opt.zero_grad()
 
-        input, output = data_loader.get_train_samples(batch_size, hParams.n_ctx)
-        input, output = input.to(ddp.assigned_device), output.to(ddp.assigned_device)
-        with torch.autocast(device_type=ddp.device_type, dtype=torch.bfloat16):
-            _, loss = model(input, output)
-        loss.backward()
+        # Grad accumulation
+        total_loss = 0.
+        for micro_step in range(tParams.grad_acc_steps):
+            input, output = data_loader.get_train_samples(micro_batch_size, hParams.n_ctx)
+            input, output = input.to(ddp.assigned_device), output.to(ddp.assigned_device)
+
+            # Disable DDP gradient sync until last micro step
+            sync_context = nullcontext()
+            if ddp.is_avail and micro_step < tParams.grad_acc_steps - 1:
+                sync_context = model.no_sync()
+
+            with sync_context:
+                with torch.autocast(device_type=ddp.device_type, dtype=torch.bfloat16):
+                    _, loss = model(input, output)
+                loss = loss / tParams.grad_acc_steps  # Scale loss
+                loss.backward()
+
+            total_loss += loss.detach()
 
         grad_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), tParams.clip_grad_max_norm)
         
@@ -91,7 +106,7 @@ if __name__ == "__main__":
             ddp.barrier()
 
         if should_log:
-            log_training_metrics(log, ddp, tParams, step_start_time, step, loss, grad_norm, debugging_lr)
+            log_training_metrics(log, ddp, tParams, step_start_time, step, total_loss, grad_norm, debugging_lr)
         if ddp.is_main and should_checkpoint:
             save_checkpoint(ddp.get_actual_model(model), opt.optimizer, step)
 

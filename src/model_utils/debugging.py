@@ -32,13 +32,12 @@ def log_training_metrics(
     If running in a DDP env, this is expected to be called by rank 0 only.
     '''
 
-    avg_loss = loss.detach()
     if ddp.is_avail:
-        dist.all_reduce(avg_loss, op=dist.ReduceOp.AVG)
+        dist.all_reduce(loss, op=dist.ReduceOp.AVG)
 
-    perplexity = torch.exp(avg_loss)
+    perplexity = torch.exp(loss)
     perplexity = f'{perplexity.item():.4f}'
-    avg_loss = f'{avg_loss.item():.4f}'
+    loss = f'{loss.item():.4f}'
     grad_norm = f'{grad_norm:.4f}'
 
     time_elapsed = time.time() - step_start_time  # secs
@@ -46,4 +45,4 @@ def log_training_metrics(
     time_elapsed = f'{time_elapsed * 1_000:.2f}'  # m.secs
 
     if ddp.is_main:
-        log.info(f"Step {step}: Time = {time_elapsed} ms. LR: {lr:.4e}. Avg. loss = {avg_loss}. Perplexity: {perplexity}. Grad Norm: {grad_norm}. Throughput: {throughput} tokens/sec")
+        log.info(f"Step {step}: Time = {time_elapsed} ms. LR: {lr:.4e}. Avg. loss = {loss}. Perplexity: {perplexity}. Grad Norm: {grad_norm}. Throughput: {throughput} tokens/sec")
