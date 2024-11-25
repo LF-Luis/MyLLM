@@ -10,6 +10,7 @@ from src.model import LLM
 from src.utils.logger import setup_logging
 from src.utils.handle_ddp import DDPHandler
 from src.utils.root import get_temp_data_abs_path
+from src.model_utils.validation import Validation
 from src.model_utils.adamw_opt import AdamWOptimizer
 from src.model_utils.debugging import get_model_size, log_training_metrics
 from src.model_utils.checkpoint_utils import save_checkpoint
@@ -59,6 +60,8 @@ if __name__ == "__main__":
         tokens_per_batch=hParams.n_ctx,
     )
 
+    val = Validation(model, data_loader, tParams, ddp)
+
     ddp.barrier()
 
     for step in range(tParams.tot_steps):
@@ -72,7 +75,6 @@ if __name__ == "__main__":
         total_loss = 0.
         for micro_step in range(tParams.grad_acc_steps):
             input, output = data_loader.get_train_samples(micro_batch_size, hParams.n_ctx)
-            input, output = input.to(ddp.assigned_device), output.to(ddp.assigned_device)
 
             # Disable DDP gradient sync until last micro step
             sync_context = nullcontext()
@@ -99,14 +101,17 @@ if __name__ == "__main__":
         is_last_step = (step == (tParams.tot_steps - 1))
         should_log = (step % tParams.logging_interval == 0) or is_last_step
         should_checkpoint = (step in tParams.checkpointing_steps) or is_last_step
+        should_run_val = (step % tParams.validation_interval == 0) or is_last_step
         
         if ddp.is_avail and should_log:
             torch.cuda.synchronize()
         if ddp.is_avail and should_checkpoint:
             ddp.barrier()
-
+            
+        val_loss = val.run_validation() if should_run_val else None
         if should_log:
-            log_training_metrics(log, ddp, tParams, step_start_time, step, total_loss, grad_norm, debugging_lr)
+            log_training_metrics(log, ddp, tParams, step_start_time, step, 
+                                 total_loss, val_loss, grad_norm, debugging_lr)
         if ddp.is_main and should_checkpoint:
             save_checkpoint(ddp.get_actual_model(model), opt.optimizer, step)
 

@@ -25,19 +25,23 @@ def get_model_size(model):
 
 
 def log_training_metrics(
-        log, ddp, tParams, step_start_time, step, loss, grad_norm, lr
+        log, ddp, tParams, step_start_time, step, loss, val_loss, grad_norm, lr
     ):
     '''
     Offload all metric logging to one function.
     If running in a DDP env, this is expected to be called by rank 0 only.
     '''
-
+    print(type(loss))
     if ddp.is_avail:
         dist.all_reduce(loss, op=dist.ReduceOp.AVG)
 
     perplexity = torch.exp(loss)
     perplexity = f'{perplexity.item():.4f}'
     loss = f'{loss.item():.4f}'
+    val_loss_str = ""
+    if val_loss:
+        val_loss_str = f' Val Loss: {val_loss.item():.4f}.'
+
     grad_norm = f'{grad_norm:.4f}'
 
     time_elapsed = time.time() - step_start_time  # secs
@@ -45,4 +49,4 @@ def log_training_metrics(
     time_elapsed = f'{time_elapsed * 1_000:.2f}'  # m.secs
 
     if ddp.is_main:
-        log.info(f"Step {step}: Time = {time_elapsed} ms. LR: {lr:.4e}. Avg. loss = {loss}. Perplexity: {perplexity}. Grad Norm: {grad_norm}. Throughput: {throughput} tokens/sec")
+        log.info(f"Step {step}: Time = {time_elapsed} ms. LR: {lr:.4e}. Avg. loss = {loss}.{val_loss_str} Perplexity: {perplexity}. Grad Norm: {grad_norm}. Throughput: {throughput} tokens/sec")

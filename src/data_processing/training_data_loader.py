@@ -122,6 +122,8 @@ class TrainingDataLoader:
         inputs = (batch[:-1]).view(self.curr_batch_count, self.curr_tokens_per_batch)
         targets = (batch[1:]).view(self.curr_batch_count, self.curr_tokens_per_batch)
 
+        inputs = inputs.to(self.ddp.assigned_device)
+        targets = targets.to(self.ddp.assigned_device)
         return inputs, targets
     
     def reset_validation(self):

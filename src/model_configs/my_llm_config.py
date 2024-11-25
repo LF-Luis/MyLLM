@@ -51,6 +51,8 @@ def get_production_config():
                 range(0, total_training_steps, int(total_training_steps * 0.2))
             )[:-1]  # Excluding last since it's very near the actual last step
         ),
+        validation_interval = 100,
+        validation_steps = 30,
     )
 
     return hParams, tParams
@@ -70,11 +72,11 @@ def get_debug_config():
         ffn_act_pdrop = 0.15,
         attn_res_pdrop = 0.1,
     )
-    tot_train_tokens = 60_000
+    tot_train_tokens = 600
     batch_token_count = 64
-    linear_warm_up_tokens = int(1.19e-02 * tot_train_tokens)
+    linear_warm_up_tokens = 2 * 64  # int(1.19e-02 * tot_train_tokens)  # 2 warm-up steps
     linear_warm_up_steps = int(linear_warm_up_tokens / batch_token_count)
-    total_training_steps = int(tot_train_tokens / batch_token_count)
+    total_training_steps = int(tot_train_tokens / batch_token_count)    # 9 total steps
     tParams = TParams(
         tot_steps = total_training_steps,
         grad_acc_steps = 2,
@@ -89,5 +91,7 @@ def get_debug_config():
         weight_decay_rate = 0.1,
         logging_interval = 1,
         checkpointing_steps = {int(total_training_steps / 2)},
+        validation_interval = 5,
+        validation_steps = 5,
     )
     return hParams, tParams
