@@ -3,14 +3,29 @@ import os
 from src.params import HParams, TParams
 
 
+def get_pre_train_sampling_prompts():
+    if os.getenv('DEBUG_MODE'):
+        return [
+            "Test",
+            "Test two",
+            "Test number three,",
+        ]
+    else:
+        return [
+            "HTML stands for",
+            "If animals could talk, my pet would probably say",
+            "The clever fox built the strange machine with just a feather, a pebble, and a tiny twig",
+        ]
+
+
 def get_llm_config():
     if os.getenv('DEBUG_MODE'):
-        return get_debug_config()
+        return _get_debug_config()
     else:
-        return get_production_config()
+        return _get_production_config()
             
     
-def get_production_config():
+def _get_production_config():
     '''
     Actual model and training values!!
     '''
@@ -53,12 +68,16 @@ def get_production_config():
         ),
         validation_interval = 100,
         validation_steps = 30,
+        sampling_interval = 500,
+        sampling_batch = 4,
+        sampling_tokens = 20,
+        sampling_top_k = 50,  # Moderate, fairly default value to start with
     )
 
     return hParams, tParams
 
 
-def get_debug_config():
+def _get_debug_config():
     '''
     Debug model and training values!!
     '''
@@ -93,5 +112,9 @@ def get_debug_config():
         checkpointing_steps = {int(total_training_steps / 2)},
         validation_interval = 5,
         validation_steps = 5,
+        sampling_interval = 5,
+        sampling_batch = 2,
+        sampling_tokens = 3,
+        sampling_top_k = 50,
     )
     return hParams, tParams

@@ -31,7 +31,7 @@ def log_training_metrics(
     Offload all metric logging to one function.
     If running in a DDP env, this is expected to be called by rank 0 only.
     '''
-    print(type(loss))
+
     if ddp.is_avail:
         dist.all_reduce(loss, op=dist.ReduceOp.AVG)
 

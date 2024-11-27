@@ -10,11 +10,12 @@ from src.model import LLM
 from src.utils.logger import setup_logging
 from src.utils.handle_ddp import DDPHandler
 from src.utils.root import get_temp_data_abs_path
+from src.model_utils.sampling import multi_sample
 from src.model_utils.validation import Validation
 from src.model_utils.adamw_opt import AdamWOptimizer
-from src.model_utils.debugging import get_model_size, log_training_metrics
 from src.model_utils.checkpoint_utils import save_checkpoint
-from src.model_configs.my_llm_config import get_llm_config
+from src.model_utils.debugging import get_model_size, log_training_metrics
+from src.model_configs.my_llm_config import get_llm_config, get_pre_train_sampling_prompts
 from src.data_processing.training_data_loader import TrainingDataLoader
 
 
@@ -32,6 +33,7 @@ if __name__ == "__main__":
     batch_size = tParams.batch_token_count / ddp.world_size / hParams.n_ctx
     micro_batch_size = int(batch_size / tParams.grad_acc_steps)
     assert batch_size % micro_batch_size == 0, f'Error, batch_size ({batch_size}) must be divisible by micro_batch_size ({micro_batch_size}).'
+    sampling_prompts = get_pre_train_sampling_prompts()
 
     # Setup model and optimizer
     # Make sure to keep this order: move to device, compile, then DDP wrap
@@ -102,13 +104,16 @@ if __name__ == "__main__":
         should_log = (step % tParams.logging_interval == 0) or is_last_step
         should_checkpoint = (step in tParams.checkpointing_steps) or is_last_step
         should_run_val = (step % tParams.validation_interval == 0) or is_last_step
-        
+        should_sample = (step % tParams.sampling_interval == 0) or is_last_step
+
         if ddp.is_avail and should_log:
             torch.cuda.synchronize()
         if ddp.is_avail and should_checkpoint:
             ddp.barrier()
-            
+
         val_loss = val.run_validation() if should_run_val else None
+
+        if should_sample: multi_sample(model, ddp, sampling_prompts, tParams)
         if should_log:
             log_training_metrics(log, ddp, tParams, step_start_time, step, 
                                  total_loss, val_loss, grad_norm, debugging_lr)

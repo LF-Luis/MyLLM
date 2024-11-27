@@ -42,3 +42,7 @@ class TParams:
     checkpointing_steps: set  # At intervals to create a checkpoint
     validation_interval: int  # Intervals at which to run validation
     validation_steps: int  # Number of validation batches to evaluate for averaging
+    sampling_interval: int  # Intervals during training at which to sample from model
+    sampling_batch: int  # Number of times to run a single prompt for sampling
+    sampling_tokens: int  # Number of tokens to generate when sampling
+    sampling_top_k: int  # top-k value for sampling
