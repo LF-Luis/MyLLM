@@ -1,6 +1,10 @@
+import logging
+
 import torch
 import torch.distributed as dist
 
+
+log = logging.getLogger(__name__)
 
 class Validation:
     '''
@@ -14,7 +18,7 @@ class Validation:
         self.ddp = ddp
         self.validation_steps = tParams.validation_steps
 
-    def run_validation(self):
+    def run_validation(self, step):
         '''
         Returns validation loss
         '''
@@ -36,4 +40,7 @@ class Validation:
         
         self.model.train()
 
-        return (val_loss / self.validation_steps)  # Average over validation steps
+        # Average over validation steps
+        val_loss = val_loss / self.validation_steps
+
+        log.info(f'Step ({step}). Val Loss: {val_loss.item():.4f}.')

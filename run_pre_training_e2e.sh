@@ -24,6 +24,13 @@ log() {
 log "LOGFILE: $LOGFILE"
 log "DEBUG_MODE is set to $DEBUG_MODE"
 
+if [ "$DEBUG_MODE" == "True" ]; then
+    export LOG_LEVEL="DEBUG"
+else
+    export LOG_LEVEL="INFO"
+fi
+log "Python log level set to $LOG_LEVEL"
+
 # Check if running on GPU-instance
 if command -v nvidia-smi &> /dev/null && nvidia-smi > /dev/null 2>&1; then
     log "Running on NVIDIA GPU-instance!"

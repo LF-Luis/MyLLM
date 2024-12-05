@@ -72,6 +72,8 @@ def _get_production_config():
         sampling_batch = 4,
         sampling_tokens = 20,
         sampling_top_k = 50,  # Moderate, fairly default value to start with
+        eval_interval = 500,
+        eval_hs_subset_key = "validation",
     )
 
     return hParams, tParams
@@ -84,7 +86,7 @@ def _get_debug_config():
     
     hParams = HParams(
         n_vocab = 50257,
-        n_ctx = 8,
+        n_ctx = 32,
         n_embd = 4,
         n_head = 2,
         n_layer = 1,
@@ -116,5 +118,7 @@ def _get_debug_config():
         sampling_batch = 2,
         sampling_tokens = 3,
         sampling_top_k = 50,
+        eval_interval = 6,
+        eval_hs_subset_key = "validation[:2]",
     )
     return hParams, tParams

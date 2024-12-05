@@ -46,3 +46,5 @@ class TParams:
     sampling_batch: int  # Number of times to run a single prompt for sampling
     sampling_tokens: int  # Number of tokens to generate when sampling
     sampling_top_k: int  # top-k value for sampling
+    eval_interval: int  # Training intervals at which to run HellaSwag evaluation
+    eval_hs_subset_key: str  # Validation subset to use from HellaSwag
