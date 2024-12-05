@@ -22,7 +22,8 @@ def multi_sample(model, ddp, prompts, tParams):
     Sample multiple 'prompts' multiple times.
     '''
     model.eval()
-    for prompt in prompts:
+    prompt_shard = [val for val in prompts[ddp.local_rank::ddp.world_size]]
+    for prompt in prompt_shard:
         _sample(model, ddp, prompt, tParams)
     model.train()
     

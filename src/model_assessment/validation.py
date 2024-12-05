@@ -43,4 +43,5 @@ class Validation:
         # Average over validation steps
         val_loss = val_loss / self.validation_steps
 
-        log.info(f'Step ({step}). Val Loss: {val_loss.item():.4f}.')
+        if self.ddp.is_main:
+            log.info(f'Step ({step}). Val Loss: {val_loss.item():.4f}')

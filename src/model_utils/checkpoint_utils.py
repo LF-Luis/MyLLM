@@ -13,6 +13,7 @@ log = logging.getLogger(__name__)
 
 
 def save_checkpoint(model, optimizer, step, scheduler=None, save_random_state=True):
+    #TODO: Needs to save the state of the training_data_loader.py as well.
     checkpoint = {
         'model_state_dict': model.state_dict(),
         'optimizer_state_dict': optimizer.state_dict(),

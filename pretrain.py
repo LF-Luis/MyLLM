@@ -112,20 +112,22 @@ if __name__ == "__main__":
 
         if ddp.is_avail and should_log:
             torch.cuda.synchronize()
-        if ddp.is_avail and should_checkpoint:
+        if should_checkpoint:
             ddp.barrier()
 
         train_end = time.time()
 
         if should_run_val: val.run_validation(step)
         if should_run_hs_eval: hSwag.run_eval(step)
-
         if should_sample: multi_sample(model, ddp, sampling_prompts, tParams)
         if should_log:
             log_training_metrics(log, ddp, tParams, train_start, train_end, step, 
                                  total_loss, grad_norm, debugging_lr)
         if ddp.is_main and should_checkpoint:
             save_checkpoint(ddp.get_actual_model(model), opt.optimizer, step)
+
+        if should_run_val or should_run_hs_eval or should_sample or should_checkpoint:
+            ddp.barrier()
 
     ddp.barrier()
     ddp.end()

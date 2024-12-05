@@ -47,6 +47,7 @@ class HellaSwag:
                 HELLASWAG_KEY, 
                 split=val_set_key, 
                 cache_dir=eval_dir, 
+                trust_remote_code=True,
                 # num_proc=NUM_PROC_FOR_DOWNLOAD,  # "validation" only contains 1 shard, not needed
             )
         self.ddp.barrier()
@@ -56,6 +57,7 @@ class HellaSwag:
             HELLASWAG_KEY, 
             split=val_set_key, 
             cache_dir=eval_dir,
+            trust_remote_code=True,
         ).shard(
             num_shards=self.ddp.world_size,
             index=self.ddp.local_rank,
