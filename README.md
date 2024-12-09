@@ -35,16 +35,22 @@ For pre-training data I looked at [Dolma](https://allenai.org/dolma) and [RedPaj
 
 **At step 0 (no training):**  
 (Green is the prompt, blue is LLM generated text.)
-- Sample 1: <span style="color:green;">If animals could talk, my pet would probably say </span><span style="color:blue;">undertake undertake distortion intest Gylassotide acids Yankee neoconcept Coming Coming launcherimpl Sussex Sussexinea minim Ding</span>
-- Sample 2: <span style="color:green;">HTML stands for </span><span style="color:blue;">campaigns desserts sawradio AUTH sort Pythononto unforeseen rainfall rainfall Host awaits solubleheaded Fever estimate genders proponentMAR</span>
-- Sample 3: <span style="color:green;">The clever fox built the strange machine with just a feather, a pebble, and a tiny twig </span><span style="color:blue;">intrusion complying Resist master Yad induced derogatory Magic damageced amusing 290Sn},{" muddy universal prospect prospect prospect Rey</span>
+- Sample 1: <span style="color:green;">If animals could talk, my pet would probably say </span>
+  - <span style="color:blue;">undertake undertake distortion intest Gylassotide acids Yankee neoconcept Coming Coming launcherimpl Sussex Sussexinea minim Ding</span>
+- Sample 2: <span style="color:green;">HTML stands for </span>
+  - <span style="color:blue;">campaigns desserts sawradio AUTH sort Pythononto unforeseen rainfall rainfall Host awaits solubleheaded Fever estimate genders proponentMAR</span>
+- Sample 3: <span style="color:green;">The clever fox built the strange machine with just a feather, a pebble, and a tiny twig </span>
+  - <span style="color:blue;">intrusion complying Resist master Yad induced derogatory Magic damageced amusing 290Sn},{" muddy universal prospect prospect prospect Rey</span>
 
 **After last training step:**  
 (Green is the prompt, blue is LLM generated text.)
-- Sample 1: <span style="color:green;">If animals could talk, my pet would probably say </span><span style="color:blue;">hello or I would say Hi.
+- Sample 1: <span style="color:green;">If animals could talk, my pet would probably say </span>
+  - <span style="color:blue;">hello or I would say Hi.
 I am excited to have my pet respond to the sound I</span>
-- Sample 2: <span style="color:green;">HTML stands for </span><span style="color:blue;">HyperText Markup Language. For more information about the browser, see:<|endoftext|>A few months ago</span>
-- Sample 3: <span style="color:green;">The clever fox built the strange machine with just a feather, a pebble, and a tiny twig </span><span style="color:blue;">; by the time it was ready, it was a great working machine. After watching him carefully,</span>
+- Sample 2: <span style="color:green;">HTML stands for </span>
+  - <span style="color:blue;">HyperText Markup Language. For more information about the browser, see:<|endoftext|>A few months ago</span>
+- Sample 3: <span style="color:green;">The clever fox built the strange machine with just a feather, a pebble, and a tiny twig </span>
+  - <span style="color:blue;">; by the time it was ready, it was a great working machine. After watching him carefully,</span>
 
 
 <details>
