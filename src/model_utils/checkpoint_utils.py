@@ -38,13 +38,16 @@ def save_checkpoint(model, optimizer, step, scheduler=None, save_random_state=Tr
     log.info(f"Checkpoint saved at step {step}.")
 
 
-def load_checkpoint(model, optimizer, scheduler=None, filepath='checkpoint.pth', load_random_state=True):
-    checkpoint = torch.load(filepath)
-    log.info(f'Loading checkpoint with data: {checkpoint}')
+def load_checkpoint(model, optimizer=None, scheduler=None, filepath='checkpoint.pth', load_random_state=True):
+    checkpoint = torch.load(filepath, map_location="cuda" if torch.cuda.is_available() else "cpu")
+    # log.info(f'Loading checkpoint with data: {checkpoint}')
     
     # Load model and optimizer states
-    model.load_state_dict(checkpoint['model_state_dict'])
-    optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+    state_dict = checkpoint['model_state_dict']
+    new_state_dict = {key.replace("_orig_mod.", ""): value for key, value in state_dict.items()}
+    model.load_state_dict(new_state_dict)
+    if optimizer:
+        optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
     
     # Load scheduler state if available
     if scheduler and checkpoint.get('scheduler_state_dict'):
@@ -57,6 +60,6 @@ def load_checkpoint(model, optimizer, scheduler=None, filepath='checkpoint.pth',
             torch.cuda.set_rng_state_all(checkpoint['cuda_random_state'])
 
     step = checkpoint['step']
-    log.info(f"Checkpoint loaded, resuming training from step {step}.")
+    # log.info(f"Checkpoint loaded, resuming training from step {step}.")
 
     return step, checkpoint['hParams']

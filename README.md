@@ -5,7 +5,9 @@
 </div>
 <div align="center"><img src="./assets/puzzle_fox.jpg" width="250"/></div>
 
-MyLLM is a deep-learning personal project where I built a modern LLM from the ground up. I focused on developing the core components required for pre-training an LLM, including writing the model-architecture code, handling large datasets, training the model efficiently, and evaluating its performance.
+MyLLM is a deep-learning personal project where I built a modern LLM (`LF_LLM-269M`) from the ground up. I focused on developing the core components required for pre-training an LLM, including writing the model-architecture code, handling large datasets, training the model efficiently, and evaluating its performance.
+
+Below I'll talk about the structure of this project, design choices, training, and results. You can find the pretrained model on Huggingface ([LF_LLM-269M on Huggingface 🤗](https://huggingface.co/LF-Luis/LF_LLM-269M)).
 
 # Directory Structure
 Directory structure of various components implemented to build `LF_LLM-269M`.
@@ -19,7 +21,7 @@ Directory structure of various components implemented to build `LF_LLM-269M`.
 <tr> <td> <b> Model Code </b> <br>
 Literal code for building every <br>
 layer of the model, and notebook <br>
-used to figure some stuff out.
+used to figure some of this.
 </td> <td> <pre>
 └── src
     ├── <a href="./src/model.py">model.py</a>
@@ -116,9 +118,11 @@ being trained/evaluated.
 </tbody> </table>
 
 # How To Reproduce
-You can debug on a Mac (or most unix/linux-machine) by using `./run_pre_training_e2e_debug.sh`.   
+You can debug training on a Mac (or most unix/linux-machine) by using `./run_pre_training_e2e_debug.sh`.   
 
 To actually train the model I used NVIDIA GPUs (went with 8xA100s because of cost). To run training end-to-end (downloading all datasets needed, training, running evals, etc) you can simply run `./run_pre_training_e2e.sh`. I used [VESSL AI's](https://vessl.ai) Workspaces to setup my training infra, using their `PyTorch 2.3.1 (CUDA 12.1)` image.
+
+[hf_sampling.ipynb](./notebooks/hf_sampling.ipynb) has steps to download from Huggingface and sample the created LLM (`LF_LLM-269M`).
 
 # LF_LLM-269M
 
@@ -175,6 +179,11 @@ For `LF_LLM-269M`, I chose the following parameters. See [my_llm_config.py](./sr
 ### Pre-Training Data
 For pre-training data I looked at [Dolma](https://allenai.org/dolma) and [RedPajama-v2](https://www.together.ai/blog/redpajama-data-v2), but [build-nanogpt](https://github.com/karpathy/build-nanogpt) showed me that a smaller, more refined dataset is enough for a small project like this so I ended up using the [Fineweb-Edu (sample-10BT)](https://huggingface.co/datasets/HuggingFaceFW/fineweb-edu) dataset.
 
+# Training LF_LLM-269M
+
+Training was done on 8 rented NVIDIA-A100-SXM4-80GB, hosted on [VESSL AI's](https://vessl.ai), I used their `PyTorch 2.3.1 (CUDA 12.1)` image for this project.   
+
+The model trained on the 10 Billion Tokens (BT) of data for about 8 hours and 47 mins (from `20:28 2024-12-06 - 05:15 2024-12-07 UTC`). Each training step processed over 0.52 Million Tokens (MT) at around ~1698 ms (1.698 secs) per step. The throughput was around ~308,800 tokens processed per second. Fine detail of pretraining can be found in the logs: [pretraining_log.txt](./assets/pretraining_log.txt).
 
 # Results
 
@@ -207,6 +216,13 @@ To get a better sense of the model's sentence completion capabilities, I ran som
 - [karpathy/build-nanogpt](https://github.com/karpathy/build-nanogpt/tree/master)
 
 </details>
+
+-----
+
+### Why is the icon above a fox?
+I asked ChatGPT for a mascot to represent this project, and it suggested a "puzzle fox." I'd never heard of that before, but it explained that it aligns with the project because various puzzle pieces were cleverly put together — clever like a fox 😅.
+
+-----
 
 ## License
 GNU GPLv3 ([LICENSE.txt](./LICENSE.txt))
