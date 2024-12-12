@@ -122,7 +122,7 @@ You can debug training on a Mac (or most unix/linux-machine) by using `./run_pre
 
 To actually train the model I used NVIDIA GPUs (went with 8xA100s because of cost). To run training end-to-end (downloading all datasets needed, training, running evals, etc) you can simply run `./run_pre_training_e2e.sh`. I used [VESSL AI's](https://vessl.ai) Workspaces to setup my training infra, using their `PyTorch 2.3.1 (CUDA 12.1)` image.
 
-[hf_sampling.ipynb](./notebooks/hf_sampling.ipynb) has steps to download from Huggingface and sample the created LLM (`LF_LLM-269M`).
+[hf_sampling.ipynb](./notebooks/hf_sampling.ipynb) has steps to download the model (`LF_LLM-269M`) from Huggingface and sample it (see the long text response example in there about the *The Industrial Revolution* and *Climate change*).
 
 # LF_LLM-269M
 
@@ -205,6 +205,8 @@ To get a better sense of the model's sentence completion capabilities, I ran som
 | "*If animals could talk, my pet would probably say*" | " *undertake undertake distortion intest Gylassotide acids Yankee neoconcept Coming Coming launcherimpl Sussex Sussexinea minim Ding*" | "*hello or I would say Hi. I am excited to have my pet respond to the sound I*" |
 | "*The clever fox built the strange machine with just a feather, a pebble, and a tiny twig*" | " *intrusion complying Resist master Yad induced derogatory Magic damageced amusing 290Sn},{" muddy universal prospect prospect prospect Rey*" | "*; by the time it was ready, it was a great working machine. After watching him carefully,*" |
 
+[hf_sampling.ipynb](./notebooks/hf_sampling.ipynb) has longer response examples.
+
 <details>
 <summary><strong>Resources/References</strong></summary>
 
@@ -214,6 +216,7 @@ To get a better sense of the model's sentence completion capabilities, I ran som
 - [mosaicml/llm-foundry](https://github.com/mosaicml/llm-foundry)
 - [google-research/tuning_playbook](https://github.com/google-research/tuning_playbook)
 - [karpathy/build-nanogpt](https://github.com/karpathy/build-nanogpt/tree/master)
+- more to add...
 
 </details>
 
